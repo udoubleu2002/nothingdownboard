@@ -41,7 +41,7 @@
   document.addEventListener("click", function (e) {
     var b = e.target.closest(".share"); if (!b) return;
     var url = location.origin + b.dataset.url;
-    var data = { title: b.dataset.title, text: b.dataset.title + " — found on Nothing Down Board", url: url };
+    var data = { title: b.dataset.title, text: b.dataset.title + " — found on nothingdown.com", url: url };
     if (navigator.share) {
       navigator.share(data).catch(function () {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {

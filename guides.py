@@ -1,4 +1,4 @@
-"""Guide landing pages for Nothing Down Board.
+"""Guide landing pages for nothingdown.com.
 
 Each guide is a list of content blocks rendered by build.py.
 Text may use [link text](/path) for internal links and {placeholders}

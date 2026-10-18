@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the Nothing Down Board website.
+"""Build the nothingdown.com website.
 
 Reads site.json and data/offers.json, writes a complete static site to public/.
 Standard library only, so it runs on Netlify's default build image:

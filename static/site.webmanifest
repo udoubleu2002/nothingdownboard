@@ -1,6 +1,6 @@
 {
-  "name": "Nothing Down Board",
-  "short_name": "Nothing Down",
+  "name": "nothingdown.com",
+  "short_name": "nothingdown",
   "description": "Every $0-down deal, updated daily.",
   "start_url": "/",
   "display": "standalone",
