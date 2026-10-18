@@ -10,7 +10,9 @@ Every $0-Down Deal, Updated Daily. A static site that Netlify rebuilds from `dat
 | `data/offers.json` | The offers. The daily refresh replaces this file. |
 | `build.py` | Builds every page into `public/` (Python standard library only) |
 | `src/site.css`, `src/site.js` | Styles and the search/filter script, inlined into each page |
-| `static/` | Favicon, app icons, social share image, web app manifest |
+| `static/` | Favicon, app icons, fallback share image, web app manifest |
+| `sharecards.py`, `fonts/` | Draws a share image (link preview) for every page with the Inter typeface |
+| `requirements.txt` | Tells Netlify to install Pillow, which draws the share images |
 | `netlify.toml` | Tells Netlify to run `python3 build.py` and publish `public/` |
 
 ## What the build produces

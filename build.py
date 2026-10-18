@@ -16,6 +16,12 @@ from collections import OrderedDict
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(ROOT, "public")
 
+try:
+    import sharecards as SC  # needs Pillow; falls back to the static image without it
+except Exception as _e:  # pragma: no cover
+    SC = None
+    print(f"Share images skipped ({_e}); using static og-image.png")
+
 SITE = json.load(open(os.path.join(ROOT, "site.json"), encoding="utf-8"))
 DATA = json.load(open(os.path.join(ROOT, "data", "offers.json"), encoding="utf-8"))
 BASE_URL = SITE["url"].rstrip("/")
@@ -289,7 +295,32 @@ def footer():
 </footer>'''
 
 
-def head(title, desc, path, jsonld, noindex=False):
+def card_path(path):
+    key = path.strip("/").replace("/", "-") or "home"
+    return f"/og/{key}.png"
+
+
+def make_card(path, kind, **kw):
+    """Draw the page's share image; return its URL path (or the static fallback)."""
+    if SC is None:
+        return "/og-image.png"
+    url = card_path(path)
+    try:
+        out = os.path.join(OUT, url.lstrip("/"))
+        if kind == "offer":
+            SC.offer_card(out, updated=fmt_date(REFRESHED), **kw)
+        else:
+            SC.page_card(out, updated=fmt_date(REFRESHED), **kw)
+        return url
+    except Exception as e:
+        print(f"Share image failed for {path}: {e}")
+        return "/og-image.png"
+
+
+ALL_COLORS = [(37, 99, 235), (14, 116, 144), (21, 128, 61), (147, 51, 234), (180, 83, 9)]
+
+
+def head(title, desc, path, jsonld, noindex=False, og_image="/og-image.png"):
     url = abs_url(path)
     # Link previews (iMessage, Facebook, X, Slack...) always lead with the site name.
     page = title.split(" | ")[0].strip()
@@ -314,15 +345,15 @@ def head(title, desc, path, jsonld, noindex=False):
 <meta property="og:title" content="{esc(og_title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
-<meta property="og:image" content="{esc(abs_url('/og-image.png'))}">
+<meta property="og:image" content="{esc(abs_url(og_image))}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="{esc(NAME)}: {esc(TAGLINE)}">
+<meta property="og:image:alt" content="{esc(og_title)}">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(og_title)}">
 <meta name="twitter:description" content="{esc(desc)}">
-<meta name="twitter:image" content="{esc(abs_url('/og-image.png'))}">
+<meta name="twitter:image" content="{esc(abs_url(og_image))}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -489,7 +520,16 @@ def listing_page(path, title, desc, eyebrow, h1, intro, offers, active_cat, crum
 {chrome()}
 </body>
 </html>'''
-    return head(title, desc, path, ld) + "\n" + body
+    n_all = len(offers)
+    if path == "/":
+        img = make_card(path, "page", eyebrow=f"Today’s deals · {REF_DATE.strftime('%A')}", headline=TAGLINE,
+                        sub=f"{n_all} offers today · {n_zero} with nothing due at signing", colors=ALL_COLORS)
+    else:
+        accent = SC.CAT_COLORS.get(active_cat) if SC and active_cat in CATEGORIES else None
+        img = make_card(path, "page", eyebrow=eyebrow.split(" · ")[0], headline=h1,
+                        sub=f"{n_all} live {'offer' if n_all == 1 else 'offers'} · {n_zero} with nothing due at signing",
+                        colors=[accent] if accent else ALL_COLORS, accent=accent)
+    return head(title, desc, path, ld, og_image=img) + "\n" + body
 
 
 # ---------------------------------------------------------------- guides
@@ -683,7 +723,10 @@ def article_page(g, blocks, faq, related, is_hub=False):
 {chrome()}
 </body>
 </html>'''
-    return head(title + f" | {NAME}", desc, path, [article_ld, faq_ld, breadcrumb_jsonld(crumbs)]) + "\n" + body
+    accent = SC.CAT_COLORS.get(cat) if SC and cat else None
+    img = make_card(path, "page", eyebrow="Guide", headline=h1, sub=f"Updated {fmt_date(REFRESHED)} with today’s live offers",
+                    colors=[accent] if accent else ALL_COLORS, accent=accent)
+    return head(title + f" | {NAME}", desc, path, [article_ld, faq_ld, breadcrumb_jsonld(crumbs)], og_image=img) + "\n" + body
 
 
 # ---------------------------------------------------------------- shared page chrome
@@ -870,7 +913,26 @@ def offer_page(o):
 {chrome()}
 </body>
 </html>'''
-    return head(f"{title} | {NAME}", desc, path, [offer_ld, breadcrumb_jsonld(crumbs)]) + "\n" + body
+    reqs0 = (o.get("requirements") or [None])[0]
+    tl = f"≈ ${total:,} total over {months_in(o.get('term'))} months" if total else ""
+    money = True
+    if isinstance(m, (int, float)) and m > 0:
+        big, unit, due_text = f"${m:,.0f}", "/mo", das
+    elif o["category"] == "Phone":
+        label = o.get("priceLabel") or price
+        if label.startswith("$0/mo"):
+            big, unit = "$0", "/mo"
+        elif label.lower().startswith("free"):
+            big, unit = "Free", ""
+        else:
+            big, unit = label, ""
+        due_text = "$0 down"
+        tl = "Paid off through 36 monthly bill credits" if "credit" in (label + " " + (o.get("term") or "")).lower() else (reqs0 or "")
+    else:
+        big, unit = das, ""
+        due_text, money = (reqs0 or o.get("priceLabel") or "See terms"), False
+    img = make_card(path, "offer", o=o, price_big=big, price_unit=unit, due=due_text, total_line=tl, due_is_money=money)
+    return head(f"{title} | {NAME}", desc, path, [offer_ld, breadcrumb_jsonld(crumbs)], og_image=img) + "\n" + body
 
 
 def thanks_page():
