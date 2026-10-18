@@ -499,3 +499,31 @@ h1 .date { color: var(--link); }
 .rank { border-top: 3px solid var(--cat, var(--line)); }
 .toolbar-wrap { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .toolbar-wrap.stuck { background: color-mix(in srgb, var(--bg) 92%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+
+/* ---------- Phone polish: bigger tap targets, less repetition */
+.offer .o-title a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.offer .acts, .offer .src, .offer .act { position: relative; z-index: 2; }
+.logo { min-height: 44px; }
+@media (max-width: 560px) {
+  .chip { min-height: 40px; }
+  .alerts-form .chk { min-height: 40px; align-items: center; padding: 4px 0; }
+  .crumbs li[aria-current] { display: none; }
+  .crumbs li:nth-last-child(2)::after { content: ""; }
+  .a-head .lede { font-size: 16px; }
+  .facts { grid-template-columns: 1fr 1fr; }
+  .facts div { padding: 10px 12px; }
+  .facts dd { font-size: 15px; }
+  .mini a { grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; padding-block: 9px; }
+  .mini-price { text-align: right; }
+  .mini-das { grid-column: 1 / -1; }
+  .gcards .gcard-d { display: none; }
+  .gcards a { padding: 14px 16px; gap: 4px; }
+  .gcard-t { font-size: 17.5px; }
+  .guides, .related { padding-block: 8px 28px; }
+  .faq { padding-block: 16px 28px; }
+  .faq-item summary { min-height: 48px; font-size: 15.5px; }
+  .alerts { padding-block: 0 28px; }
+  .alerts-copy h2 { font-size: 23px; }
+  .site-footer { padding-block: 24px 16px; }
+  .foot-brand p { font-size: 13.5px; }
+}

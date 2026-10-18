@@ -320,8 +320,23 @@ def make_card(path, kind, **kw):
 ALL_COLORS = [(37, 99, 235), (14, 116, 144), (21, 128, 61), (147, 51, 234), (180, 83, 9)]
 
 
+def clamp(text, limit=155):
+    text = re.sub(r"\s+", " ", text or "").strip()
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    end = max(cut.rfind(". "), cut.rfind("; "))
+    if end > limit * 0.6:
+        return cut[:end + 1]
+    return cut[:cut.rfind(" ")].rstrip(",;:—-") + "…"
+
+
 def head(title, desc, path, jsonld, noindex=False, og_image="/og-image.png"):
     url = abs_url(path)
+    # Keep titles inside Google's ~60-character display: drop the site-name suffix when it doesn't fit.
+    if " | " in title and len(title) > 60:
+        title = title.split(" | ")[0]
+    desc = clamp(desc)
     # Link previews (iMessage, Facebook, X, Slack...) always lead with the site name.
     page = title.split(" | ")[0].strip()
     og_title = f"{NAME}: {TAGLINE}" if path == "/" else (page if page.startswith(NAME) else f"{NAME}: {page}")
@@ -553,7 +568,7 @@ def guide_context():
     leases0 = sorted([o for o in OFFERS if o["category"] == "Car lease" and o.get("zeroDueAtSigning")
                       and isinstance(o.get("monthly"), (int, float)) and o["monthly"] > 0], key=lambda o: o["monthly"])
     lowest = f"{leases0[0]['title']} at ${leases0[0]['monthly']:,.0f}/mo" if leases0 else "latest lease offers"
-    return _Safe(month=MONTH, today=REF_DAY, n_all=len(OFFERS), n_lease=cnt.get("Car lease", 0),
+    return _Safe(month=MONTH, today=REF_DAY, short=fmt_date(REFRESHED), n_all=len(OFFERS), n_lease=cnt.get("Car lease", 0),
                  n_lease_zero=len(leases0), n_finance=cnt.get("Car financing", 0), n_home=cnt.get("Home loan", 0),
                  n_phone=cnt.get("Phone", 0), n_solar=cnt.get("Home improvement", 0), lowest_lease=lowest)
 
@@ -804,6 +819,7 @@ CATEGORY_NOTES = {
         "Financing the full price means you may owe more than the car is worth for a while; gap coverage helps.",
         "A shorter loan term builds equity faster.",
         "Get preapproved before you visit the dealer.",
+        "Compare the APR and total interest, not just the monthly payment; a longer term lowers the payment but costs more.",
     ],
     "Home loan": [
         "Zero down still leaves closing costs, often 2% to 5% of the price; a seller credit can cover some of them.",
@@ -841,12 +857,17 @@ def offer_page(o):
     total = total_cost(o)
     kind = {"Car lease": " $0 Down Lease", "Phone": " Deal"}.get(o["category"], "")
     if o["category"] == "Car lease" and isinstance(o.get("monthly"), (int, float)) and o["monthly"] > 0:
-        title = f"{o['title']} $0 Down Lease at {price}, {das}"
+        tail = "$0 Due at Signing" if o.get("zeroDueAtSigning") else "$0 Down"
+        title = f"{o['title']} Lease: {price}, {tail}"
+        if len(title) > 60:
+            title = f"{re.sub(r'^20[0-9][0-9] ', '', o['title'])} Lease: {price}, {tail}"
     elif o["category"] == "Phone":
         title = f"{o['title']}: {price}"
     else:
-        title = f"{o['title']}, {das}"
-    desc = f"{o['title']} from {o['provider']}: {price}, {das}. {o.get('summary') or ''}"[:300]
+        title = f"{o['title']}: {das}"
+        if len(title) > 60 and "," in das:
+            title = f"{o['title']}: {das.split(',')[0]}"
+    desc = f"{o['title']}: {price}, {das}. {o.get('summary') or ''}"
     crumbs = [("Home", "/"), (cat["nav"], f"/{cat['slug']}/"), (o["title"], path)]
     offer_ld = {"@context": "https://schema.org", "@type": "Offer", "name": o["title"], "description": o.get("summary"),
                 "url": abs_url(path), "category": o["category"], "seller": {"@type": "Organization", "name": o["provider"]}}
@@ -855,7 +876,7 @@ def offer_page(o):
         offer_ld["priceSpecification"] = {"@type": "UnitPriceSpecification", "price": m, "priceCurrency": "USD", "unitText": "MONTH"}
     if o.get("expires"):
         offer_ld["validThrough"] = o["expires"]
-    facts = [("Monthly", price), ("Due at signing", das)]
+    facts = []
     if total:
         facts.append(("Total of payments", f"≈ ${total:,} over {months_in(o.get('term'))} months"))
     if o.get("term"):
@@ -962,7 +983,7 @@ def write(path, content):
 
 def about_page():
     path = "/about/"
-    title = f"About {NAME}"
+    title = f"About {NAME}: How We Find $0-Down Deals"
     desc = f"How {NAME} finds and checks zero-down offers every morning, and how the site makes money."
     body = f'''<body>
 {site_header()}
@@ -976,6 +997,9 @@ def about_page():
   <p>We list an offer when no down payment is required. Some still ask for a first payment, taxes or fees at signing, so every listing shows exactly what is due up front. Use the “Only $0 due at signing” filter to see offers where nothing at all is due.</p>
   <h2 id="disclosure">How we make money</h2>
   <p>Some links on this site may be affiliate links. If you sign up or buy through one, we may earn a commission at no extra cost to you. Commissions never decide which offers appear or how they rank; listings are sorted by payment, date or name.</p>
+  <h2>What you’ll find here</h2>
+  <p>Every listing is a current offer that asks for no down payment, sorted into five kinds of deals: <a href="/car-leases/">car leases</a> with nothing or almost nothing due at signing, <a href="/car-financing/">car loans</a> with 100% financing, <a href="/home-loans/">home loans</a> with 0% down such as VA and USDA loans, <a href="/phones/">phone deals</a> paid off through bill credits, and <a href="/home-improvement/">solar and home upgrades</a> with nothing paid at installation. Each offer has its own page with the price, what is due up front, who qualifies and a link to the source.</p>
+  <p>New to zero-down deals? Start with <a href="/guides/best-nothing-down-deals/">the best nothing-down deals, ranked</a>, or answer three quick questions with “What can I get?” to see only the offers that fit you.</p>
   <h2>Before you sign</h2>
   <p>Offers vary by credit, region and dealer, and they change often. Always confirm the final terms with the provider. Nothing here is financial advice.</p>
   <p><a class="btn-primary" href="/">See today’s offers</a></p>

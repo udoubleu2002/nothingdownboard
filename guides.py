@@ -22,11 +22,11 @@ Block types:
 
 HUB = {
     "slug": "best-nothing-down-deals",
-    "title": "The Best Nothing-Down Deals Right Now ({month}): 7 Types Ranked",
+    "title": "Best Nothing-Down Deals ({month}): 7 Types Ranked",
     "nav": "Best $0-down deals",
     "desc": "Which zero-down deals are actually worth it? We rank $0-due-at-signing leases, VA and USDA loans, free phones, 100% auto loans, doctor loans and $0-down solar, with today’s live offers.",
     "h1": "The best nothing-down deals, ranked",
-    "eyebrow": "Guide · Updated {today}",
+    "eyebrow": "Guide · Updated {short}",
     "intro": "“No money down” shows up on car lots, mortgage ads and phone store windows, but the deals behave very differently once you sign. Here are the seven kinds of zero-down offers worth knowing, ranked by how much they save you up front and how few strings come attached.",
 }
 
@@ -93,6 +93,7 @@ RANKED = [
 HUB_BLOCKS = [
     ("callout", "The short answer",
      "If you qualify for a VA loan, it is the strongest zero-down deal there is. For everyone else with good credit, $0-due-at-signing leases are the easiest to find: there are {n_lease_zero} live today, starting with the {lowest_lease}. Free phones are a good deal only if you were going to stay with that carrier anyway."),
+    ("h2", "ranking", "The 7 best types of zero-down deals"),
     ("ranked",),
     ("h2", "compare", "How the zero-down deals compare"),
     ("table", "Zero-down deal types side by side",
@@ -135,13 +136,12 @@ GUIDES = [
         "slug": "zero-down-car-leases",
         "category": "Car lease",
         "nav": "$0 down car leases",
-        "title": "$0 Down Car Leases ({month}): How They Work and Today’s Best Deals",
+        "title": "$0 Down Car Leases ({month}): Best Deals and How They Work",
         "desc": "How $0 down and $0-due-at-signing car leases really work, what they cost, who qualifies, and the best zero-down lease deals live today.",
         "h1": "$0 down car leases: how they work and the best deals today",
-        "eyebrow": "Car lease guide · Updated {today}",
+        "eyebrow": "Car lease guide · Updated {short}",
         "intro": "A zero-down lease lets you drive a new car home without a big check at the dealership. It is one of the easiest nothing-down deals to find, but “$0 down” and “$0 due at signing” are not the same thing, and the difference shows up in your payment.",
         "blocks": [
-            ("callout", "Today’s lowest $0-due-at-signing lease", "The {lowest_lease}, with nothing due when you sign. See all {n_lease} current [zero-down car leases](/car-leases/)."),
             ("offers", "Car lease", 6, True),
             ("h2", "difference", "$0 down vs. $0 due at signing"),
             ("p", "These two phrases get used as if they mean the same thing. They don’t."),
@@ -195,7 +195,7 @@ GUIDES = [
         "title": "How to Buy a Car With No Money Down ({month})",
         "desc": "Zero-down car loans explained: who offers 100% auto financing, what it costs, how to avoid being upside down, and today’s live no-money-down auto loan offers.",
         "h1": "How to buy a car with no money down",
-        "eyebrow": "Car loan guide · Updated {today}",
+        "eyebrow": "Car loan guide · Updated {short}",
         "intro": "Buying a car with no money down means financing the full price, and sometimes the taxes and fees too. It is possible with good credit, but it changes the math on what you owe and for how long.",
         "blocks": [
             ("offers", "Car financing", 4, False),
@@ -243,10 +243,10 @@ GUIDES = [
         "slug": "zero-down-home-loans",
         "category": "Home loan",
         "nav": "0% down home loans",
-        "title": "Zero Down Home Loans ({month}): VA, USDA and Other 0% Down Mortgages",
+        "title": "Zero Down Home Loans ({month}): VA, USDA and More",
         "desc": "Every way to buy a house with no down payment: VA loans, USDA loans, credit-union 100% financing and doctor loans, with fees, eligibility and today’s live programs.",
         "h1": "Zero down home loans: every way to buy with 0% down",
-        "eyebrow": "Mortgage guide · Updated {today}",
+        "eyebrow": "Mortgage guide · Updated {short}",
         "intro": "A 20% down payment on a typical home is out of reach for many buyers. A handful of mortgage programs skip the down payment entirely. Here is how each one works, who qualifies and what it costs.",
         "blocks": [
             ("offers", "Home loan", 7, False),
@@ -299,10 +299,10 @@ GUIDES = [
         "slug": "free-phone-deals",
         "category": "Phone",
         "nav": "Free phone deals",
-        "title": "Free Phone Deals ({month}): Are $0 Down Phones Really Free?",
+        "title": "Free Phone Deals ({month}): Are They Really Free?",
         "desc": "How free and $0-down phone deals from AT&T, T-Mobile, Verizon and Metro work, what they require, the catch with 36-month bill credits, and today’s best offers.",
         "h1": "Free phone deals: are $0 down phones really free?",
-        "eyebrow": "Phone deals guide · Updated {today}",
+        "eyebrow": "Phone deals guide · Updated {short}",
         "intro": "Every carrier advertises a free phone. Most of those deals are real, but they come with conditions that decide whether “free” saves you money or costs you more over three years.",
         "blocks": [
             ("offers", "Phone", 8, False),
@@ -348,7 +348,7 @@ GUIDES = [
         "title": "$0 Down Solar ({month}): Loans vs. Leases vs. PPAs",
         "desc": "How $0-down solar works in 2026: solar loans, leases and power purchase agreements compared, the end of the federal homeowner credit, and how to choose.",
         "h1": "$0 down solar: loans vs. leases vs. PPAs",
-        "eyebrow": "Solar guide · Updated {today}",
+        "eyebrow": "Solar guide · Updated {short}",
         "intro": "You can put solar panels on your roof without paying anything at installation. There are three ways to do it, and they lead to very different results over 20 years.",
         "blocks": [
             ("offers", "Home improvement", 4, False),
