@@ -82,6 +82,7 @@
     store("ndb-seen", { ids: uniq, at: today });
     var sincePill = document.querySelector('[data-pill="since"]');
     if (sincePill && sinceIds.length) { sincePill.hidden = false; sincePill.textContent = sinceIds.length + " new since your last visit"; }
+    if (sinceIds.length && $("sinceMWrap")) { $("sinceMWrap").hidden = false; $("sinceMLabel").textContent = sinceIds.length + " new since my last visit"; }
 
     function val(id) { var el = $(id); return el.type === "checkbox" ? el.checked : el.value; }
     function setVal(id, v) { var el = $(id); if (el.type === "checkbox") el.checked = !!v; else el.value = v == null ? "" : v; }
@@ -173,6 +174,9 @@
       var c = activeCount();
       $("filterBadge").hidden = c === 0; $("filterBadge").textContent = c;
       paintPills(); syncUrl();
+      if ($("sortM")) $("sortM").value = $("sort").value;
+      if ($("savedM")) $("savedM").checked = state.saved;
+      if ($("sinceM")) $("sinceM").checked = state.since;
     };
 
     function sortItems() {
@@ -194,6 +198,9 @@
     $("q").addEventListener("input", function () { clearTimeout(t); t = setTimeout(apply, 120); });
     $("q").addEventListener("search", apply);
     $("sort").addEventListener("change", apply);
+    if ($("sortM")) $("sortM").addEventListener("change", function () { $("sort").value = $("sortM").value; apply(); });
+    if ($("savedM")) $("savedM").addEventListener("change", function () { state.saved = $("savedM").checked; apply(); });
+    if ($("sinceM")) $("sinceM").addEventListener("change", function () { state.since = $("sinceM").checked; apply(); });
     filterIds.forEach(function (id) { $(id).addEventListener(id === "minMo" || id === "maxMo" ? "input" : "change", apply); });
 
     $$(".pill").forEach(function (b) {

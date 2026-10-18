@@ -186,7 +186,7 @@ def offer_html(o, heading="h3"):
   data-title="{esc(o.get("title"))}" data-text="{esc(hay)}" data-id="{esc(o["id"])}" data-total="{total if total else ""}">
   <div class="o-head">
     <{heading} class="o-title"><a href="{offer_path(o)}">{esc(o.get("title"))}</a></{heading}>
-    <p class="meta"><span class="cat">{esc(o.get("category"))}</span><span>{esc(o.get("provider"))}</span><span>Checked {esc(fmt_date(o.get("verified")))}</span></p>
+    <p class="meta"><span class="cat">{esc(o.get("category"))}</span><span>{esc(o.get("provider"))}</span><span class="chk-date">Checked {esc(fmt_date(o.get("verified")))}</span></p>
   </div>
   <div class="price"><span class="mo">{esc(price_text(o))}</span><span class="das{" zero" if zero else ""}">{esc(o.get("dueAtSigning") or "$0 down")}</span>{f'<span class="tot">≈ ${total:,} over {months_in(o.get("term"))} mo</span>' if total else ""}</div>
   <p class="summary">{esc(o.get("summary"))}</p>
@@ -349,6 +349,20 @@ def filters_rail():
     return f'''<aside class="rail" id="filters" aria-label="Filters" tabindex="-1">
   <div class="rail-head"><h2 class="rail-title">Filters</h2><button type="button" class="icon-btn" id="closeFilters" aria-label="Close filters">✕</button></div>
   <div class="rail-body">
+    <div class="field m-only">
+      <label class="label" for="sortM">Sort by</label>
+      <select id="sortM">
+        <option value="monthly">Lowest monthly</option>
+        <option value="total">Lowest total cost</option>
+        <option value="newest">Newest</option>
+        <option value="ending">Ending soonest</option>
+        <option value="az">Name A–Z</option>
+      </select>
+    </div>
+    <fieldset class="field m-only"><legend class="label">Show</legend>
+      <label class="chk"><input type="checkbox" id="savedM"> Only my saved offers</label>
+      <label class="chk" id="sinceMWrap" hidden><input type="checkbox" id="sinceM"> <span id="sinceMLabel">New since my last visit</span></label>
+    </fieldset>
     <div class="field">
       <label class="label" for="provider">Brand or provider</label>
       <select id="provider"><option value="">All</option>{opts}</select>

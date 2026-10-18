@@ -406,3 +406,37 @@ body.sheet-open { overflow: hidden; }
   .hero-cta .btn-ghost { flex: 0 0 auto; }
   .cta-sub { display: none; }
 }
+
+/* ---------- Phone declutter: show offers first */
+.m-only { display: none; }
+@media (max-width: 860px) {
+  .m-only { display: flex; }
+  .pills { display: none; }
+  .sort-select { display: none; }
+}
+@media (max-width: 560px) {
+  .hero { padding-block: 14px 0; gap: 6px; }
+  .hero .lede, .hero .stats, .hero .hero-cta { display: none; }
+  .hero .crumbs { display: none; }
+  .eyebrow { font-size: 11.5px; }
+  h1 { font-size: 27px; line-height: 1.12; letter-spacing: -.015em; max-width: none; }
+  .cats { padding-block: 10px 0; }
+  .chip { min-height: 36px; padding: 0 12px; font-size: 14px; }
+  .toolbar { padding-block: 8px; }
+  .layout { padding-top: 0; }
+  .results { gap: 8px; }
+  .count { font-size: 13px; }
+  /* Slim cards */
+  .offer { gap: 4px 12px; padding: 12px 14px; }
+  .offer .summary, .offer .chk-date, .offer .tag:not(.req):not(.since):not(.exp) { display: none; }
+  .o-title { font-size: 17px; }
+  .meta { font-size: 12.5px; margin-top: 1px; }
+  .mo { font-size: 17px; }
+  .tot { font-size: 11.5px; }
+  .tags { gap: 4px; margin-top: 0; }
+  .tag { font-size: 11.5px; padding: 2px 7px; }
+  .acts { margin-top: 2px; gap: 6px; }
+  .act { min-height: 40px; width: 40px; padding: 0; justify-content: center; }
+  .act .act-l { display: none; }
+  .acts .src { margin-left: auto; width: auto; font-size: 13px; min-height: 40px; }
+}
