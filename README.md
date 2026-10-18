@@ -1,4 +1,4 @@
-# nothingdown.com website
+# NothingDown.com website
 
 Every $0-Down Deal, Updated Daily. A static site that Netlify rebuilds from `data/offers.json` each time it changes.
 

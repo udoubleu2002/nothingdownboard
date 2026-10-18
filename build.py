@@ -259,14 +259,14 @@ def brand_path(p):
 def cat_nav(active):
     """active: a category name, "home" for the homepage, or None for pages outside the category list."""
     cnt = counts_by_cat()
-    links = [("/", "All deals", len(OFFERS), active == "home")]
+    links = [("/", "All deals", len(OFFERS), active == "home", "all")]
     for cat, c in CATEGORIES.items():
         if cnt.get(cat):
-            links.append((f"/{c['slug']}/", c["nav"], cnt[cat], active == cat))
+            links.append((f"/{c['slug']}/", c["nav"], cnt[cat], active == cat, cat))
     current = ' aria-current="page"'
     return "".join(
-        f'<a class="chip" href="{p}"{current if cur else ""}>{esc(label)} <span class="n">{n}</span></a>'
-        for p, label, n, cur in links)
+        f'<a class="chip" data-cat="{esc(dc)}" href="{p}"{current if cur else ""}>{esc(label)} <span class="n">{n}</span></a>'
+        for p, label, n, cur, dc in links)
 
 
 def footer():
@@ -291,6 +291,9 @@ def footer():
 
 def head(title, desc, path, jsonld, noindex=False):
     url = abs_url(path)
+    # Link previews (iMessage, Facebook, X, Slack...) always lead with the site name.
+    page = title.split(" | ")[0].strip()
+    og_title = f"{NAME}: {TAGLINE}" if path == "/" else (page if page.startswith(NAME) else f"{NAME}: {page}")
     ld = "".join('<script type="application/ld+json">' + json.dumps(j, ensure_ascii=False).replace("</", "<\\/") + "</script>"
                  for j in jsonld)
     robots = '<meta name="robots" content="noindex">' if noindex else '<meta name="robots" content="index, follow, max-image-preview:large">'
@@ -303,12 +306,12 @@ def head(title, desc, path, jsonld, noindex=False):
 <meta name="description" content="{esc(desc)}">
 {robots}
 <link rel="canonical" href="{esc(url)}">
-<meta name="theme-color" content="#f4f6f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#fff0e6" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f1619" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{esc(NAME)}">
-<meta property="og:title" content="{esc(title)}">
+<meta property="og:title" content="{esc(og_title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
 <meta property="og:image" content="{esc(abs_url('/og-image.png'))}">
@@ -317,7 +320,7 @@ def head(title, desc, path, jsonld, noindex=False):
 <meta property="og:image:alt" content="{esc(NAME)}: {esc(TAGLINE)}">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(title)}">
+<meta name="twitter:title" content="{esc(og_title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{esc(abs_url('/og-image.png'))}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -532,7 +535,7 @@ def inline(text):
 
 def mini_offer(o):
     zero = bool(o.get("zeroDueAtSigning"))
-    return (f'<li class="mini"><a href="/{CATEGORIES[o["category"]]["slug"]}/#{esc(o["id"])}">'
+    return (f'<li class="mini" data-cat="{esc(o["category"])}"><a href="/{CATEGORIES[o["category"]]["slug"]}/#{esc(o["id"])}">'
             f'<span class="mini-title">{esc(o["title"])}</span>'
             f'<span class="mini-price">{esc(price_text(o))}</span>'
             f'<span class="mini-das{" zero" if zero else ""}">{esc(o.get("dueAtSigning") or "$0 down")}</span></a></li>')
@@ -592,7 +595,7 @@ def ranked_html():
         g = GUIDE_BY_SLUG.get(r["guide"])
         live = cnt.get(r["category"], 0)
         cslug = CATEGORIES[r["category"]]["slug"]
-        items.append(f'''<li class="rank" id="rank-{i}">
+        items.append(f'''<li class="rank" id="rank-{i}" data-cat="{esc(r["category"])}">
   <div class="rank-head"><span class="rank-n">{i}</span><h3>{esc(r["name"])}</h3></div>
   <dl class="rank-dl"><dt>Best for</dt><dd>{esc(r["best_for"])}</dd><dt>Why it’s good</dt><dd>{esc(r["why"])}</dd><dt>Watch out for</dt><dd>{esc(r["watch"])}</dd></dl>
   <p class="rank-links">{f'<a href="{guide_path(g["slug"])}">Read the guide</a>' if g else ""}<a href="/{cslug}/">See {live} live {"offer" if live == 1 else "offers"}</a></p>
@@ -794,7 +797,12 @@ def offer_page(o):
     das = o.get("dueAtSigning") or "$0 down"
     total = total_cost(o)
     kind = {"Car lease": " $0 Down Lease", "Phone": " Deal"}.get(o["category"], "")
-    title = f"{o['title']}{kind}: {price}, {das}"
+    if o["category"] == "Car lease" and isinstance(o.get("monthly"), (int, float)) and o["monthly"] > 0:
+        title = f"{o['title']} $0 Down Lease at {price}, {das}"
+    elif o["category"] == "Phone":
+        title = f"{o['title']}: {price}"
+    else:
+        title = f"{o['title']}, {das}"
     desc = f"{o['title']} from {o['provider']}: {price}, {das}. {o.get('summary') or ''}"[:300]
     crumbs = [("Home", "/"), (cat["nav"], f"/{cat['slug']}/"), (o["title"], path)]
     offer_ld = {"@context": "https://schema.org", "@type": "Offer", "name": o["title"], "description": o.get("summary"),
@@ -838,7 +846,7 @@ def offer_page(o):
     body = f'''<body>
 {site_header()}
 <main id="main">
-  <article class="offer-page wrap">
+  <article class="offer-page wrap" data-cat="{esc(o["category"])}">
     {crumb_html}
     <p class="eyebrow">{esc(o["category"])} · {esc(o["provider"])}</p>
     <h1>{esc(o["title"])}</h1>
